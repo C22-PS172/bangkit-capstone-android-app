@@ -1,3 +1,14 @@
 <resources>
     <string name="app_name">Bangkit Capstone App</string>
+    <string name="camera">Camera</string>
+    <string name="gallery">Gallery</string>
+    <string name="addDescription">Description</string>
+    <string name="search">Search</string>
+    <string name="addNewStory">Add New Story</string>
+    <string name="upload">Upload</string>
+    <string name="onFailure">Check your internet connection and try again later</string>
+    <string name="choosePicture">Choose a Picture</string>
+    <string name="chooseImage">Please take picture or choose from gallery</string>
+    <string name="permission">Application did not have permission</string>
+    <string name="addDescriptionError">Please fill description</string>
 </resources>

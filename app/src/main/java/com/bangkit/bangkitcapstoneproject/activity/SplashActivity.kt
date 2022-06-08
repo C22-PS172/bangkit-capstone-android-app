@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import com.bangkit.bangkitcapstoneproject.activity.ui.HomeActivity
 import com.bangkit.bangkitcapstoneproject.databinding.ActivitySplashBinding
 import com.bumptech.glide.Glide
 import java.util.*
