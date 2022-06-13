@@ -1,14 +1,14 @@
-package com.bangkit.bangkitcapstoneproject.activity.ui
+package com.bangkit.bangkitcapstoneproject.activity.ui.home
 
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
+import android.view.View
 import android.view.WindowInsets
 import android.view.WindowManager
 import android.widget.Toast
@@ -17,15 +17,10 @@ import androidx.activity.viewModels
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
-import androidx.core.net.toUri
 import com.bangkit.bangkitcapstoneproject.R
+import com.bangkit.bangkitcapstoneproject.activity.ui.result.ResultActivity
 import com.bangkit.bangkitcapstoneproject.activity.utils.*
 import com.bangkit.bangkitcapstoneproject.databinding.ActivityHomeBinding
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.MultipartBody
-import okhttp3.RequestBody.Companion.asRequestBody
-import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.File
 
 class HomeActivity : AppCompatActivity() {
@@ -65,8 +60,12 @@ class HomeActivity : AppCompatActivity() {
         }
         supportActionBar?.hide()
 
-        if (homeViewModel.imgUri.isNotEmpty()) {
-            binding.previewImageView.setImageURI(homeViewModel.imgUri.toUri())
+        homeViewModel.isLoading.observe(this) { isLoading ->
+            binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+        }
+
+        homeViewModel.message.observe(this) { message ->
+            message(message)
         }
 
         if (!allPermissionsGranted()) {
@@ -77,7 +76,7 @@ class HomeActivity : AppCompatActivity() {
             )
         }
 
-        binding.cameraButton.setOnClickListener {
+        binding.camera.setOnClickListener {
             val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
             intent.resolveActivity(packageManager)
             createTempFile(application).also {
@@ -93,33 +92,12 @@ class HomeActivity : AppCompatActivity() {
                 launcherIntentCamera.launch(intent)
             }
         }
-        binding.galleryButton.setOnClickListener {
+        binding.gallery.setOnClickListener {
             val intent = Intent()
             intent.action = Intent.ACTION_GET_CONTENT
             intent.type = "image/*"
             val chooser = Intent.createChooser(intent, getString(R.string.choosePicture))
             launcherIntentGallery.launch(chooser)
-        }
-        binding.uploadButton.setOnClickListener{
-            if (homeViewModel.file != null) {
-                if (binding.descriptionInput.text.toString().trim().isBlank()) {
-                    message(getString(R.string.addDescriptionError))
-                } else {
-                    val file = reduceFileImage(homeViewModel.file as File)
-
-                    val description = binding.descriptionInput.text.toString().trim().toRequestBody("text/plain".toMediaType())
-                    val imageFile = file.asRequestBody("image/jpeg".toMediaTypeOrNull())
-                    val imageMultipart: MultipartBody.Part = MultipartBody.Part.createFormData(
-                        "photo",
-                        file.name,
-                        imageFile
-                    )
-
-                    //Initiate Retrofit Client Here
-                }
-            } else {
-                message(getString(R.string.chooseImage))
-            }
         }
     }
 
@@ -132,13 +110,17 @@ class HomeActivity : AppCompatActivity() {
     ) {
         if (it.resultCode == RESULT_OK) {
             homeViewModel.file = File(homeViewModel.path)
-            val degree = isBitmapRotated(homeViewModel.path)
-            if (degree == 0f) {
-                binding.previewImageView.setImageBitmap(BitmapFactory.decodeFile(homeViewModel.path))
-            } else {
-                binding.previewImageView.setImageBitmap(
-                    rotateBitmap(BitmapFactory.decodeFile(homeViewModel.path), degree)
-                )
+            homeViewModel.getResult()
+
+            if (homeViewModel.isResponseSuccessful) {
+                if (!homeViewModel.isResponseBodyNullOrError) {
+                    homeViewModel.showLoading(false)
+                    val moveToResult = Intent(this@HomeActivity, ResultActivity::class.java)
+                    moveToResult.putExtra(ResultActivity.URI, homeViewModel.imgUri)
+                    moveToResult.putExtra(ResultActivity.RESULT, homeViewModel.result)
+                    startActivity(moveToResult)
+                    finish()
+                }
             }
         }
     }
@@ -151,12 +133,18 @@ class HomeActivity : AppCompatActivity() {
             homeViewModel.imgUri = selectedImg.toString()
             val myFile = uriToFile(selectedImg, this@HomeActivity)
             homeViewModel.file = myFile
-            binding.previewImageView.setImageURI(homeViewModel.imgUri.toUri())
+
+            if (homeViewModel.isResponseSuccessful) {
+                if (!homeViewModel.isResponseBodyNullOrError) {
+                    homeViewModel.showLoading(false)
+                    startActivity(Intent(this@HomeActivity, ResultActivity::class.java))
+                    finish()
+                }
+            }
         }
     }
 
     companion object {
-        const val TOKEN = "token"
         private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
         private const val REQUEST_CODE_PERMISSIONS = 10
     }

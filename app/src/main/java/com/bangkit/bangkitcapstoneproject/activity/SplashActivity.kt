@@ -1,12 +1,14 @@
 package com.bangkit.bangkitcapstoneproject.activity
 
+import android.animation.AnimatorSet
+import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import com.bangkit.bangkitcapstoneproject.activity.ui.HomeActivity
+import android.view.View
+import com.bangkit.bangkitcapstoneproject.activity.ui.home.HomeActivity
 import com.bangkit.bangkitcapstoneproject.databinding.ActivitySplashBinding
-import com.bumptech.glide.Glide
 import java.util.*
 import kotlin.concurrent.schedule
 
@@ -24,11 +26,14 @@ class SplashActivity : AppCompatActivity() {
     }
 
     private fun setupView() {
-        Glide.with(this)
-            .load("https://i.stack.imgur.com/3hRmg.png")
-            .circleCrop()
-            .into(binding.appIcon)
+        val appIcon = ObjectAnimator.ofFloat(binding.appIcon, View.ALPHA, 1f).setDuration(500)
+        val appName = ObjectAnimator.ofFloat(binding.appName, View.ALPHA, 1f).setDuration(500)
 
+        AnimatorSet().apply {
+            playSequentially(appIcon, appName)
+            startDelay = 500
+            start()
+        }
     }
 
     private fun goToHome() {
@@ -42,5 +47,4 @@ class SplashActivity : AppCompatActivity() {
             goToHome()
         }
     }
-
 }
