@@ -42,6 +42,7 @@ class HomeViewModel : ViewModel() {
 
     fun getResult() {
         if (file != null) {
+            showLoading(true)
             val rotatedBitmap = reduceFileImage(file as File)
             val imageFile = rotatedBitmap.asRequestBody("image/jpeg".toMediaTypeOrNull())
             val imageMultipart: MultipartBody.Part = MultipartBody.Part.createFormData(
@@ -50,40 +51,50 @@ class HomeViewModel : ViewModel() {
                 imageFile
             )
 
-            val client = apiService.getResult(imageMultipart)
-            client.enqueue(object : Callback<ApiResponse> {
-                override fun onResponse(
-                    call: Call<ApiResponse>,
-                    response: Response<ApiResponse>
-                ) {
-                    if (response.isSuccessful) {
-                        val responseBody = response.body()
-                        if (responseBody != null && !responseBody.error) {
-                            result = responseBody.result
-                            showLoading(false)
-                            isResponseBodyNullOrError = false
-                            isResponseSuccessful = true
-                        } else {
-                            showLoading(false)
-                            isResponseBodyNullOrError = true
-                            isResponseSuccessful = true
-                            responseBody?.message?.let { showMessage(it) }
-                        }
-                    } else {
-                        showLoading(false)
-                        isResponseSuccessful = false
-                        showMessage(response.message())
-                    }
-                }
+            result = Result(
+                "Jamur Tiram",
+                "Pleurotus ostreatus",
+                "Dapat Dikonsumsi"
+            )
+            showLoading(false)
+            isResponseBodyNullOrError = false
+            isResponseSuccessful = true
 
-                override fun onFailure(
-                    call: Call<ApiResponse>,
-                    t: Throwable
-                ) {
-                    showLoading(false)
-                    showMessage(R.string.onFailure.toString())
-                }
-            })
+//            Karena Api Belum Siap kita anggap saja sudah Succesful dulu
+//            val client = apiService.getResult(imageMultipart)
+//            client.enqueue(object : Callback<ApiResponse> {
+//                override fun onResponse(
+//                    call: Call<ApiResponse>,
+//                    response: Response<ApiResponse>
+//                ) {
+//                    if (response.isSuccessful) {
+//                        val responseBody = response.body()
+//                        if (responseBody != null && !responseBody.error) {
+//                            result = responseBody.result
+//                            showLoading(false)
+//                            isResponseBodyNullOrError = false
+//                            isResponseSuccessful = true
+//                        } else {
+//                            showLoading(false)
+//                            isResponseBodyNullOrError = true
+//                            isResponseSuccessful = true
+//                            responseBody?.message?.let { showMessage(it) }
+//                        }
+//                    } else {
+//                        showLoading(false)
+//                        isResponseSuccessful = false
+//                        showMessage(response.message())
+//                    }
+//                }
+//
+//                override fun onFailure(
+//                    call: Call<ApiResponse>,
+//                    t: Throwable
+//                ) {
+//                    showLoading(false)
+//                    showMessage(R.string.onFailure.toString())
+//                }
+//            })
         }
     }
 }

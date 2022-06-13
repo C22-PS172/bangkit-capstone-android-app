@@ -119,7 +119,6 @@ class HomeActivity : AppCompatActivity() {
                     moveToResult.putExtra(ResultActivity.URI, homeViewModel.imgUri)
                     moveToResult.putExtra(ResultActivity.RESULT, homeViewModel.result)
                     startActivity(moveToResult)
-                    finish()
                 }
             }
         }
@@ -134,13 +133,12 @@ class HomeActivity : AppCompatActivity() {
             val myFile = uriToFile(selectedImg, this@HomeActivity)
             homeViewModel.file = myFile
 
-            if (homeViewModel.isResponseSuccessful) {
-                if (!homeViewModel.isResponseBodyNullOrError) {
-                    homeViewModel.showLoading(false)
-                    startActivity(Intent(this@HomeActivity, ResultActivity::class.java))
-                    finish()
-                }
-            }
+            homeViewModel.getResult() // agar tidak error
+            homeViewModel.showLoading(false)
+            val moveToResult = Intent(this@HomeActivity, ResultActivity::class.java)
+            moveToResult.putExtra(ResultActivity.URI, homeViewModel.imgUri)
+            moveToResult.putExtra(ResultActivity.RESULT, homeViewModel.result)
+            startActivity(moveToResult)
         }
     }
 
